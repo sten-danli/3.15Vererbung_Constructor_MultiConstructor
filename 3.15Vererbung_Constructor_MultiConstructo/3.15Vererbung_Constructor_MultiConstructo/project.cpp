@@ -2,116 +2,216 @@
 using namespace std;
 
 
-//	二: 2）静态成员变量
-		//静态成员属于类，不属于对象
+//四：虚基类，虚继承，虚派生
 
+
+
+
+
+//三:类型转换
 class Grand
 {
 public:
-	Grand (int i):m_valuegrand(i){}//父类构造函数。
+	Grand() {};
+	Grand(int i, int j, int k){}
 
-public://父类成员函数。。
-	void myinfo()
-	{
-		cout << m_valuegrand;
-	}
-
-public:
-	int m_valuegrand;
-	virtual ~Grand() {}
-
-public:
-	static int m_static;//生明一个静态成员。如果你在代码中不用m static，那么你可以不定义，如果代码中用到m static，则必须定义，否则连接出错。
 };
 
-int Grand::m_static = 8;//为了能够使用我们定义的这个静态成员变量，我们定义了这个静态成员变量(分配内存)；
-
-class A :public Grand
+class A:public Grand
 {
 public:
-
-	A(int i): Grand(i),m_valuea(i)//构造函数
-	{
-		
-	}
-	virtual ~A()
-	{
-
-	}
-	void myinfo()
-	{
-		cout << "调用了 A myinfo"<< endl;
-	}
-
+	A() {};
+	A(int i, int j, int k):Grand(i,j,k) {};
+	virtual void func() { cout << "run funcA" << endl; }
 public:
-	int m_valuea;
-};
-
-class B//类B不继承Grand
-{
-public:
-	B(int i):m_valueb(i){}
-	~B(){}
+	void funcPrintA() { cout << "调用A的funcPrintA（）成员函数" << endl; }
 	
-	//virtual void myinfoB() = 0;
-
-public:
-	void funbBprint()//父类的成员函数
-	{
-		cout << "funBprint"<<endl;
-	}
-public:
-	int m_valueb;
 };
 
-//类C同时继承父类A和类B
-class C:public A, public B //派生列表
+class B
 {
 public:
-	C():m_valuec(0),A(0),B(0){}
-	C(int a, int b, int c):A(a),B(b),m_valuec(c)
-	{
-
-	}
-	/*void myinfoB()
-	{
-		cout << "调用了myinfoB"<< endl;
-	}*/
-public:
-	void myinfo() 
-	{
-
-		cout << "调用了C myinfo()";
-	}
-	void myinforc()
-	{
-		cout << m_valuec << endl;
-	}
-public:
-	void returnBfunc()//在这里里面调用父类的成员函数。
-	{
-		B::funbBprint();
-	}
-	~C()
-	{
-
-	}
-
-public:
-	int m_valuec;
+	B(int tv) {};
+	void func() { cout << "run funcB" << endl; }
 };
 
+class C :public A, public B
+{
+
+public:
+	using A::A;
+	using B::B;	
+
+public:
+	C(int i, int j, int k) :A(i,j,k),B(i) {};
+	void func() { cout << "run funcC" << endl; }
+	void funcprintC() { cout << "调用C的funcPrintC（）成员函数" << endl; }
+};
+int main()
+{
+	Grand* pg = new C(1,2,3);
+	A* pa = new C(4,5,6);
+	pa->func();		//		run funcC
+	pa->A::func();	//		run funcA	//如果要调用父类A的函数与C的同名成员函数同名的话就要在父类函数前用virtual语句	
+	pa->funcPrintA();//不是同名的话可以正常调用。
+	C c(1);
+	c.funcprintC();
+	
+
+	
+	//B* pb = new C(7, 8, 9);
+	//C myc(898);
+	//Grand mygrand(myc);//不熟悉可回顾3章十一节
+	//C c(1, 2, 3);
+}
+
+
+
+
+
+
+////(2.4)从多个父类继承构造函数。例如一个子类继承多个父类。
+////子类要定义同参数的构造函数的自己的版本。
 //
+//class A
+//{
+//public:
+//	A(int tv) {};
+//	void func() { cout << "run funcA" << endl; }
+//};
+//
+//class B
+//{
+//public:
+//	B(int tv) {};
+//	void func(){ cout << "run funcB"<<endl; }
+//};
+//class C :public A, public B
+//{
+//public:
+//	using A::A;	//继承A的构造函数，为的是不用再写自己的构造函数。	C(int tv):A(tv){}
+//	using B::B;//继承B的构造函数，为的是不用再写自己的构造函数。	C(int tv):B(tv){}	但是这里将出现错误，因为A和B的构造函数相同。
+//	//如果一个类从他的的基类继承了相同的构造函数，这个类必须为该构造函数定义他自己的版本。
+//	C(int tv):A(tv),B(tv) {};//在C中定义自己的构造函数版本。
+//	void func() { cout << "run funcC" << endl; }
+//};
 //int main()
 //{
-//
+//	
+//	
+//	
+//}
+
+////	二: 2）静态成员变量
+//		//静态成员属于类，不属于对象
 //	//(2.3)派生类构造函数与析构函数
 //	//a)构造一个派生类对象将同时构造并初始化所有的基类对象。
 //	//b）派生类的构造函数初始化列表值初始化他的直接父类。每个类的构造函数都负责初始化他的直接父类，就会让所有类都得到初始化。
 //	//c）派生类构造函数初始化列表将实参分别传递给每个直接父类；子类的构造顺序跟派生列表中父类的出现顺序保持一致。
 //	//重要概念：显式初始化基类，和隐士初始化，当基类有默认构造函数时，子类可以不用初始化基类的默认构造函数，这是就用到了隐士初始化基类功能。
 //	
+//
+//class Grand
+//{
+//public:
+//	Grand (int i):m_valuegrand(i){}//父类构造函数。
+//
+//public://父类成员函数。。
+//	void myinfo()
+//	{
+//		cout << m_valuegrand;
+//	}
+//
+//public:
+//	int m_valuegrand;
+//	virtual ~Grand() {}
+//
+//public:
+//	static int m_static;//生明一个静态成员。如果你在代码中不用m static，那么你可以不定义，如果代码中用到m static，则必须定义，否则连接出错。
+//};
+//
+//int Grand::m_static = 8;//为了能够使用我们定义的这个静态成员变量，我们定义了这个静态成员变量(分配内存)；
+//
+//class A :public Grand
+//{
+//public:
+//
+//	A(int i): Grand(i),m_valuea(i)//构造函数
+//	{
+//		
+//	}
+//	virtual ~A()
+//	{
+//
+//	}
+//	void myinfo()
+//	{
+//		cout << "调用了 A myinfo"<< endl;
+//	}
+//
+//public:
+//	int m_valuea;
+//};
+//
+//class B//类B不继承Grand
+//{
+//public:
+//	B(int i):m_valueb(i){}
+//	~B(){}
+//	
+//	//virtual void myinfoB() = 0;
+//
+//public:
+//	void funbBprint()//父类的成员函数
+//	{
+//		cout << "funBprint"<<endl;
+//	}
+//public:
+//	int m_valueb;
+//};
+//
+////类C同时继承父类A和类B
+//class C:public A, public B //派生列表
+//{
+//public:
+//	C():m_valuec(0),A(0),B(0){}
+//	C(int a, int b, int c):A(a),B(b),m_valuec(c)
+//	{
+//
+//	}
+//	/*void myinfoB()
+//	{
+//		cout << "调用了myinfoB"<< endl;
+//	}*/
+//public:
+//	void myinfo() 
+//	{
+//
+//		cout << "调用了C myinfo()";
+//	}
+//	void myinforc()
+//	{
+//		cout << m_valuec << endl;
+//	}
+//public:
+//	void returnBfunc()//在这里里面调用父类的成员函数。
+//	{
+//		B::funbBprint();
+//	}
+//	~C()
+//	{
+//
+//	}
+//
+//public:
+//	int m_valuec;
+//};
+//
+//
+//int main()
+//{
 //	C c(22,23,24);
+//	c.returnBfunc();
 //	c.m_static = 5;//可以用对象名来引用静态变量。
 //	Grand::m_static = 1;//可以用类名来引用静态变量。
 //	A::m_static = 2;
@@ -120,8 +220,8 @@ public:
 //	
 //	
 //}
-//
-//
+
+
 //二:1） //单继承，如果从多个父类来产生出子类： 多重继承；
 //class Grand
 //{
